@@ -13,10 +13,12 @@ async function lockUSDC({ ashley, zrx }) {
   await ashley.lock(100, zrx);
   expect(await ashley.tokenBalance(zrx)).toEqual(900);
   expect(await ashley.chainBalance(zrx)).toEqual(100);
+  throw 'abc';
 }
 
 buildScenarios('Extract Scenarios', extract_scen_info, { beforeEach: lockUSDC }, [
   {
+    only: true,
     name: "Extract Collateral",
     scenario: async ({ ashley, zrx, chain, starport, log }) => {
       let notice = getNotice(await ashley.extract(50, zrx));
