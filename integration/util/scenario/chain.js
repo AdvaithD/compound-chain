@@ -139,7 +139,6 @@ class Chain {
     return asset.rate_model.toJSON();
   }
 
-
   async pendingCashValidators() {
     let vals = await this.ctx.api().query.cash.nextValidators.entries();
     const authData = vals.map(([valIdRaw, chainKeys]) =>
@@ -179,6 +178,22 @@ class Chain {
     const rawAuths = await this.ctx.api().rpc.state.getStorage(auraAuthStorageKey);
     const auths = this.ctx.api().createType('Authorities', rawAuths.value);
     return auths.map(e => this.ctx.actors.keyring.encodeAddress(e));
+  }
+
+  // Validator class from validator.js
+  async rotateKeys(validator) {
+    const keysRaw = await validator.api.rpc.author.rotateKeys();
+    const res = this.ctx.api().createType('SessionKeys', keysRaw);
+    return {grandpa: this.ctx.actors.keyring.encodeAddress(res.grandpa), aura: this.ctx.actors.keyring.encodeAddress(res.aura)};
+  }
+
+  async setKeys(signer, keys) {
+    const unsub = await this.ctx.api().tx.session.setKeys(keys, new Uint8Array()).signAndSend(signer, ({ status, events }) => {
+      if (status.isInBlock || status.isFinalized) {
+        console.log("STTUS", status);
+        unsub();
+      }
+    });
   }
   
   async waitUntilSession(num) {
