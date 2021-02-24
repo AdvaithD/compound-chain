@@ -62,18 +62,18 @@ buildScenarios('Gov Scenarios', gov_scen_info, [
       const keyring = ctx.actors.keyring;
       const peer_id = "12D3KooW9qtwBHeQryg9mXBVMkz4YivUsj62g1tYBACUukKToKof";
       const node_key = "0x0000000000000000000000000000000000000000000000000000000000000002";
-      const charlie_address = "0x9c00B0af5586aE099649137ca6d00a641aD30736";
       const eth_private_key = "0xb1b07e7078273a09c64ef9bd52f49636535ba26624c7c75a57e1286b13c8f7ea";
+      const eth_account = "0x9c00B0af5586aE099649137ca6d00a641aD30736";
 
-      const newValidator = await validators.addValidator("Charlie", { peer_id, node_key, eth_private_key });
+      const newValidator = await validators.addValidator("Charlie", { peer_id, node_key, eth_private_key, eth_account });
 
       const newValidatorKeys = await chain.rotateKeys(newValidator);
-      console.log(newValidatorKeys, newValidatorKeys.grandpa);
-      const charlie = keyring.createFromUri("//Charlie");
-      console.log(charlie.address);
+
+      const charlie = keyring.createFromUri("//Alice");
       const charlieCompoundId = charlie.address;
+      console.log(charlieCompoundId)
       console.log("set keys", await chain.setKeys(charlie, newValidatorKeys));
-        // {grandpa: keyring.decodeAddress(newValidatorKeys.grandpa), aura: keyring.decodeAddress(newValidatorKeys.aura)}));
+      // {grandpa: keyring.decodeAddress(newValidatorKeys.grandpa), aura: keyring.decodeAddress(newValidatorKeys.aura)}));
       // console.log(newValidatorKeys);
 
 
