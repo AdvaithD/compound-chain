@@ -184,7 +184,8 @@ class Chain {
   async rotateKeys(validator) {
     const keysRaw = await validator.api.rpc.author.rotateKeys();
     const res = this.ctx.api().createType('SessionKeys', keysRaw);
-    return {grandpa: this.ctx.actors.keyring.encodeAddress(res.grandpa), aura: this.ctx.actors.keyring.encodeAddress(res.aura)};
+    return res;
+    // return {grandpa: this.ctx.actors.keyring.encodeAddress(res.grandpa), aura: this.ctx.actors.keyring.encodeAddress(res.aura)};
   }
 
   async setKeys(signer, keys) {

@@ -28,6 +28,7 @@ buildScenarios('Gov Scenarios', gov_scen_info, [
     }
   },
   {
+    // only: true,
     name: "Update Auth",
     scenario: async ({ ctx, chain, starport, validators }) => {
       const alice = validators.validatorInfoMap.alice;
@@ -69,35 +70,31 @@ buildScenarios('Gov Scenarios', gov_scen_info, [
 
       const newValidatorKeys = await chain.rotateKeys(newValidator);
 
-      const charlie = keyring.createFromUri("//Alice");
+      const charlie = keyring.createFromUri("//Charlie");
       const charlieCompoundId = charlie.address;
-      console.log(charlieCompoundId)
-      console.log("set keys", await chain.setKeys(charlie, newValidatorKeys));
-      // {grandpa: keyring.decodeAddress(newValidatorKeys.grandpa), aura: keyring.decodeAddress(newValidatorKeys.aura)}));
-      // console.log(newValidatorKeys);
+      await chain.setKeys(charlie, newValidatorKeys);
 
+      const {  alice, bob } = validators.validatorInfoMap;
+      const toValKeys = (substrateId, ethAccount) => {return  {"substrate_id": keyring.decodeAddress(substrateId), "eth_address": ethAccount} };
+      const allAuthsRaw = [
+        toValKeys(alice.aura_key, alice.eth_account),
+        toValKeys(bob.aura_key, bob.eth_account),
+        toValKeys(charlieCompoundId, eth_account),
+      ];
+      const extrinsic = ctx.api().tx.cash.changeValidators(allAuthsRaw);
+      await starport.executeProposal("Update authorities", [extrinsic]);
+      // const timer = ms => new Promise(res => setTimeout(res, ms));
+      // await timer(30000);
+      await chain.waitUntilSession(3);
 
-      // const { alice, bob } = validators.validatorInfoMap;
-      // const allAuthsRaw = [
-      //   { substrate_id: keyring.decodeAddress(alice.aura_key), eth_address: alice.eth_account },
-      //   { substrate_id: keyring.decodeAddress(bob.aura_key), eth_address: bob.eth_account },
-      //   { substrate_id: keyring.decodeAddress(charlieCompoundId), eth_address: charlie_address }
-      // ];
-      // const extrinsic = await ctx.api().tx.cash.changeValidators(allAuthsRaw);
-      // await starport.executeProposal("Update authorities", [extrinsic]);
+      const newSessionAuths = await chain.sessionValidators();
+      expect(newSessionAuths.sort()).toEqual([alice.aura_key, bob.aura_key, charlieCompoundId].sort());
 
-      // await chain.waitUntilSession(3);
+      const auraAuths = await chain.getAuraAuthorites();
+      expect(auraAuths.sort()).toEqual([alice.aura_key, bob.aura_key, newValidatorKeys.aura].sort());
 
-      // const newSessionAuths = await chain.sessionValidators();
-      // expect(newSessionAuths.sort()).toEqual([alice.aura_key, bob.aura_key, charlieCompoundId].sort());
-
-      // const auraAuths = await chain.getAuraAuthorites();
-      // console.log(auraAuths)
-      // expect(auraAuths.sort()).toEqual([alice.aura_key, bob.aura_key, newValidatorKeys.aura].sort());
-
-      // const grandpaAuths = await chain.getGrandpaAuthorities();
-      // expect(grandpaAuths.sort()).toEqual([alice.grandpa_key, bob.grandpa_key, newValidatorKeys.grandpa].sort());
-      // console.log("GRANDPA PASSED");
+      const grandpaAuths = await chain.getGrandpaAuthorities();
+      expect(grandpaAuths.sort()).toEqual([alice.grandpa_key, bob.grandpa_key, newValidatorKeys.grandpa].sort());
     }
   },
   {

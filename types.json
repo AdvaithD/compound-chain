@@ -412,7 +412,6 @@
     }
   },
   "Source10": "AccountRS",
-  "LiquidityFactor": "u128",
   "Address": "MultiAddress",
   "LookupSource": "MultiAddress",
   "VersionedAuthorityList": {
@@ -423,5 +422,6 @@
   "SessionKeys": {
     "aura": "[u8;32]",
     "grandpa": "[u8;32]"
-  }
+  },
+  "Keys": "SessionKeys"
 }
