@@ -255,15 +255,16 @@ pub trait SessionInterface<AccountId>: frame_system::Config {
     fn is_valid_keys(x: AccountId) -> bool;
 }
 
-impl<T: Config> SessionInterface<AccountId32> for T where
-	T: pallet_session::Config<ValidatorId = AccountId32>
+impl<T: Config> SessionInterface<AccountId32> for T
+where
+    T: pallet_session::Config<ValidatorId = AccountId32>,
 {
-	fn is_valid_keys(x: AccountId32) -> bool {
+    fn is_valid_keys(x: AccountId32) -> bool {
         match <pallet_session::Module<T>>::next_keys(x as T::ValidatorId) {
             Some(_keys) => true,
-            None => false
+            None => false,
         }
-	}
+    }
 }
 
 impl<T: Config> pallet_session::SessionManager<SubstrateId> for Module<T> {
