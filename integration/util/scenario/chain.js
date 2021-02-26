@@ -1,4 +1,4 @@
-const { sendAndWaitForEvents, waitForEvent, getEventData } = require('../substrate');
+const { sendAndWaitForEvents, waitForEvent, getEventData, signAndSend } = require('../substrate');
 const { sleep, arrayEquals, keccak256 } = require('../util');
 const {
   getNoticeChainId,
@@ -180,21 +180,14 @@ class Chain {
     return auths.map(e => this.ctx.actors.keyring.encodeAddress(e));
   }
 
-  // Validator class from validator.js
   async rotateKeys(validator) {
     const keysRaw = await validator.api.rpc.author.rotateKeys();
-    const res = this.ctx.api().createType('SessionKeys', keysRaw);
-    return res;
-    // return {grandpa: this.ctx.actors.keyring.encodeAddress(res.grandpa), aura: this.ctx.actors.keyring.encodeAddress(res.aura)};
+    return  this.ctx.api().createType('SessionKeys', keysRaw);
   }
 
   async setKeys(signer, keys) {
-    const unsub = await this.ctx.api().tx.session.setKeys(keys, new Uint8Array()).signAndSend(signer, ({ status, events }) => {
-      if (status.isInBlock || status.isFinalized) {
-        console.log("STTUS", status);
-        unsub();
-      }
-    });
+    const call = this.ctx.api().tx.session.setKeys(keys, new Uint8Array());
+    await signAndSend(call, signer);
   }
   
   async waitUntilSession(num) {

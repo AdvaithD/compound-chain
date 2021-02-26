@@ -90,9 +90,9 @@ pub trait Config:
 
     /// Convert implementation for Moment -> Timestamp.
     type TimeConverter: Convert<<Self as pallet_timestamp::Config>::Moment, Timestamp>;
-
     /// Placate substrate's `HandleLifetime` trait.
     type AccountStore: StoredMap<SubstrateId, ()>;
+    type SessionInterface: self::SessionInterface<AccountId32>;
 }
 
 decl_storage! {
@@ -251,12 +251,42 @@ fn check_failure<T: Config>(res: Result<(), Reason>) -> Result<(), Reason> {
     res
 }
 
+pub trait SessionInterface<AccountId>: frame_system::Config {
+    fn is_valid_keys(x: AccountId) -> bool;
+}
+
+impl<T: Config> SessionInterface<AccountId32> for T where
+	T: pallet_session::Config<ValidatorId = AccountId32>
+{
+	fn is_valid_keys(x: AccountId32) -> bool {
+        match <pallet_session::Module<T>>::next_keys(x as T::ValidatorId) {
+            Some(_keys) => true,
+            None => false
+        }
+	}
+}
+
 impl<T: Config> pallet_session::SessionManager<SubstrateId> for Module<T> {
     // return validator set to use in the next session (aura and grandpa also stage new auths associated w these accountIds)
     fn new_session(session_index: SessionIndex) -> Option<Vec<SubstrateId>> {
         if NextValidators::iter().count() != 0 {
-            NextSessionIndex::put(session_index);
-            Some(NextValidators::iter().map(|x| x.0).collect::<Vec<_>>())
+            // make sure all potential next validators have associated session keys before we add them
+            let mut is_valid = true;
+            for (id, _) in NextValidators::iter() {
+                if T::SessionInterface::is_valid_keys(id.clone()) == false {
+                    error!("Next Validator {:#?} has no queued session keys", id);
+                    is_valid = false;
+                }
+            }
+
+            if is_valid == true {
+                // use new validators
+                NextSessionIndex::put(session_index);
+                Some(NextValidators::iter().map(|x| x.0).collect::<Vec<_>>())
+            } else {
+                // keep old validators
+                Some(Validators::iter().map(|x| x.0).collect::<Vec<_>>())
+            }
         } else {
             Some(Validators::iter().map(|x| x.0).collect::<Vec<_>>())
         }

@@ -68,6 +68,15 @@ function waitForEvent(api, pallet, method, onFinalize = true, failureEvent = nul
   return promise;
 }
 
+// TODO
+async function signAndSend(call, signer) {
+  const unsub = await call.signAndSend(signer, ({ status, events }) => {
+    if (status.isInBlock || status.isFinalized) {
+      console.log("STATUS", status);
+      unsub();
+    }
+  });
+}
 
 function sendAndWaitForEvents(call, api, onFinalize = true, rejectOnFailure = true) {
   return new Promise(async (resolve, reject) => {
@@ -202,6 +211,7 @@ module.exports = {
   findEvent,
   getEventData,
   sendAndWaitForEvents,
+  signAndSend,
   waitForEvent,
   getNotice,
   getEventName,
