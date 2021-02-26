@@ -1247,7 +1247,7 @@ pub fn on_initialize_internal<T: Config>(
     // the last block's time and the block before
     // XXX also we should try to inject Now (and previous) for tests instead of taking different path
     if now == 0 {
-        return Err(Reason::TimeTravelNotAllowed);
+        return Ok(0);
     }
     if last_yield_timestamp == 0 {
         // this is the first time we have seen a valid time, set it

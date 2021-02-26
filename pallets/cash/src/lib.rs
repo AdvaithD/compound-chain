@@ -316,7 +316,7 @@ decl_module! {
         fn set_miner(origin, miner: ChainAccount) {
             ensure_none(origin)?;
 
-            log!("set_miner({:?})", miner);
+            log!("set_miner({:?})", String::from(miner));
             Miner::put(miner);
         }
 
