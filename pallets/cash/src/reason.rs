@@ -177,7 +177,6 @@ pub enum MathError {
 pub enum OracleError {
     EthAbiParseError,
     InvalidApiEndpoint,
-    InvalidApiResponse,
     InvalidKind,
     InvalidSymbol,
     InvalidTicker,
