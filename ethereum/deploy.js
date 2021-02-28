@@ -93,7 +93,8 @@ const main = async (admin) => {
       CASH: cash._address,
       StarportImpl: starportImpl._address,
       CashImpl: cashImpl._address,
-      ProxyAdmin: proxyAdmin._address
+      ProxyAdmin: proxyAdmin._address,
+      ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     },
     Tokens: {
       CASH: {
@@ -102,6 +103,12 @@ const main = async (admin) => {
         name: "Compound CASH Token",
         decimals: 6,
         address: cash._address
+      },
+      ETH: {
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18,
+        address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
       }
     }
   });
