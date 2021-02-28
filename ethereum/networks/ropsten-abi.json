@@ -674,7 +674,7 @@
             "payable": true
         }
     ],
-    "Cash": [
+    "CASH": [
         {
             "inputs": [
                 {

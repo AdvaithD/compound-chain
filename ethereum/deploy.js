@@ -90,10 +90,19 @@ const main = async (admin) => {
   await writeJSON(`networks/${network}.json`, {
     Contracts: {
       Starport: starport._address,
-      Cash: cash._address,
+      CASH: cash._address,
       StarportImpl: starportImpl._address,
       CashImpl: cashImpl._address,
       ProxyAdmin: proxyAdmin._address
+    },
+    Tokens: {
+      CASH: {
+        contract: "CashToken",
+        symbol: "CASH",
+        name: "Compound CASH Token",
+        decimals: 6,
+        address: cash._address
+      }
     }
   });
 
@@ -101,7 +110,7 @@ const main = async (admin) => {
     `networks/${network}-abi.json`,
     {
       Starport: starportImpl._jsonInterface,
-      Cash: cashImpl._jsonInterface,
+      CASH: cashImpl._jsonInterface,
       StarportImpl: starportImpl._jsonInterface,
       CashImpl: cashImpl._jsonInterface,
       StarportProxy: starportProxy._jsonInterface,
