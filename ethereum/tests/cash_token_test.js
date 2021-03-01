@@ -210,6 +210,47 @@ describe('CashToken', () => {
     })
   });
 
+  describe('#setFutureYield', () => {
+    it('should set correct current and next indexes, yields and startTimes', async () => {
+      const blockNumber = await web3.eth.getBlockNumber();
+      const block = await web3.eth.getBlock(blockNumber);
+      const nextYieldTimestamp = block.timestamp + 30 * 60;
+
+      const yieldAndIndex_before = await call(cash, 'cashYieldAndIndex');
+      const startAt_before = await call(cash, 'cashYieldStartAt');
+
+      // Update future yield, first change
+      await send(cash, 'setFutureYield', [43628, 1e6, nextYieldTimestamp], { from: admin });
+      const yieldAndIndex_change = await call(cash, 'cashYieldAndIndex');
+      const startAt_change = await call(cash, 'cashYieldStartAt');
+      const nextYieldAndIndex_change = await call(cash, 'nextCashYieldAndIndex');
+      const nextStartAt_change = await call(cash, 'nextCashYieldStartAt');
+
+      expect(yieldAndIndex_change.yield).toEqualNumber(yieldAndIndex_before.yield);
+      expect(yieldAndIndex_change.index).toEqualNumber(yieldAndIndex_before.index);
+      expect(startAt_change).toEqualNumber(startAt_before);
+      expect(nextYieldAndIndex_change.yield).toEqualNumber(43628);
+      expect(nextYieldAndIndex_change.index).toEqualNumber(1e6);
+      expect(nextStartAt_change).toEqualNumber(nextYieldTimestamp);
+
+      await sendRPC(web3, "evm_increaseTime", [31 * 60]);
+
+      // Update future yield, second change, current yield, index and time are set to previous next values
+      await send(cash, 'setFutureYield', [43629, 11e5, nextYieldTimestamp + 60 * 60], { from: admin });
+      const yieldAndIndex_change2 = await call(cash, 'cashYieldAndIndex');
+      const startAt_change2 = await call(cash, 'cashYieldStartAt');
+      const nextYieldAndIndex_change2 = await call(cash, 'nextCashYieldAndIndex');
+      const nextStartAt_change2 = await call(cash, 'nextCashYieldStartAt');
+
+      expect(yieldAndIndex_change2.yield).toEqualNumber(nextYieldAndIndex_change.yield);
+      expect(yieldAndIndex_change2.index).toEqualNumber(nextYieldAndIndex_change.index);
+      expect(startAt_change2).toEqualNumber(nextStartAt_change);
+      expect(nextYieldAndIndex_change2.yield).toEqualNumber(43629);
+      expect(nextYieldAndIndex_change2.index).toEqualNumber(11e5);
+      expect(nextStartAt_change2).toEqualNumber(nextYieldTimestamp + 60 * 60);
+    });
+  });
+
   describe('#mint', () => {
     it('should mint tokens and emit `Transfer` event', async () => {
       expect(await call(cash, 'totalSupply')).toEqualNumber(0);
